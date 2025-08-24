@@ -68,10 +68,19 @@ A modern, mobile-first budget tracking app designed for couples to manage their 
 
 ### Vercel (Recommended)
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Deploy with default settings
-4. The app will automatically create a SQLite database on first run
+1. **Push your code to GitHub**
+2. **Connect your repository to Vercel**
+3. **Add Vercel Postgres:**
+   - Go to your Vercel dashboard
+   - Select your project
+   - Go to the "Storage" tab
+   - Click "Create Database" → "Postgres"
+   - Follow the setup wizard
+4. **Deploy with default settings**
+5. **Initialize the database:**
+   - After deployment, visit: `https://your-app.vercel.app/api/init`
+   - This will create tables and seed Bert & Sam as initial users
+6. **Your app is ready!** Bert and Sam will be available for selection
 
 ### Manual Deployment
 
@@ -87,7 +96,17 @@ A modern, mobile-first budget tracking app designed for couples to manage their 
 
 ### Environment Variables
 
-No environment variables required. The app uses a local SQLite database that is created automatically.
+Vercel Postgres automatically provides these environment variables when you add the Postgres add-on:
+- `POSTGRES_URL`
+- `POSTGRES_PRISMA_URL` 
+- `POSTGRES_URL_NO_SSL`
+- `POSTGRES_URL_NON_POOLING`
+- `POSTGRES_USER`
+- `POSTGRES_HOST`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DATABASE`
+
+No manual configuration required - Vercel handles this automatically!
 
 ## 📱 Mobile App Experience
 
@@ -119,9 +138,10 @@ Features full-screen mode, custom icons, and splash screens.
 
 - **API Routes**: Next.js API endpoints for all database operations
 - **Client-side wrapper**: Abstracted fetch calls with error handling
-- **SQLite database**: Persistent local storage
-- **Type safety**: Full TypeScript interfaces
+- **Vercel Postgres**: Persistent cloud database with auto-scaling
+- **Type safety**: Full TypeScript interfaces with proper SQL typing
 - **Real-time updates**: Automatic refresh after data changes
+- **Auto-initialization**: Database tables and seed data created automatically
 
 ---
 
