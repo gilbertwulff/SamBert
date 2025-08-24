@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "reset-db": "node scripts/reset-db.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

@@ -91,6 +91,8 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
   );
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seedLoading, setSeedLoading] = useState(false);
+  const [seedMessage, setSeedMessage] = useState('');
   
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -132,6 +134,59 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
       onBudgetUpdated();
     } catch (error) {
       console.error('Failed to remove budget:', error);
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    setSeedLoading(true);
+    setSeedMessage('');
+    
+    try {
+      const response = await fetch('/api/seed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setSeedMessage(`✅ Success! ${result.data.userCount} users and ${result.data.categoryCount} categories created.`);
+        // Refresh users list
+        fetchData();
+      } else {
+        setSeedMessage(`❌ Error: ${result.error}`);
+      }
+    } catch (error) {
+      setSeedMessage('❌ Failed to seed database');
+      console.error('Seed error:', error);
+    } finally {
+      setSeedLoading(false);
+    }
+  };
+
+  const handleCheckDatabase = async () => {
+    setSeedLoading(true);
+    setSeedMessage('');
+    
+    try {
+      const response = await fetch('/api/seed', {
+        method: 'GET',
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setSeedMessage(`📊 Database status: ${result.data.userCount} users, ${result.data.categoryCount} categories`);
+      } else {
+        setSeedMessage(`❌ Error: ${result.error}`);
+      }
+    } catch (error) {
+      setSeedMessage('❌ Failed to check database');
+      console.error('Database check error:', error);
+    } finally {
+      setSeedLoading(false);
     }
   };
 
@@ -228,6 +283,48 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
                   </div>
                 </form>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Database Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">🗄️ Database Management</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-gray-600">
+              Use these tools to manage the database on your deployed app.
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                onClick={handleCheckDatabase}
+                disabled={seedLoading}
+                variant="outline"
+                className="flex-1"
+              >
+                {seedLoading ? 'Checking...' : 'Check Database'}
+              </Button>
+              
+              <Button
+                onClick={handleSeedDatabase}
+                disabled={seedLoading}
+                className="flex-1"
+              >
+                {seedLoading ? 'Seeding...' : 'Reset & Seed Database'}
+              </Button>
+            </div>
+            
+            {seedMessage && (
+              <div className="p-2 bg-gray-50 rounded text-sm">
+                {seedMessage}
+              </div>
+            )}
+            
+            <div className="text-xs text-gray-500">
+              <strong>Check Database:</strong> View current users and categories<br/>
+              <strong>Reset & Seed:</strong> Clear all data and add Bert & Sam with default categories
             </div>
           </CardContent>
         </Card>

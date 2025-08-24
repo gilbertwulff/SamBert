@@ -66,27 +66,47 @@ const initDB = () => {
 };
 
 // Seed initial data
-const seedData = () => {
-  // Check if data already exists
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
-  
-  if (userCount.count === 0) {
-    // Insert users
-    const insertUser = db.prepare('INSERT INTO users (name, budget_cap) VALUES (?, ?)');
-    insertUser.run('Bert', 3000);
-    insertUser.run('Sam', 3000);
+export const seedData = (force = false) => {
+  try {
+    // Check if data already exists
+    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+    console.log('Current user count:', userCount.count);
+    
+    if (userCount.count === 0 || force) {
+      if (force && userCount.count > 0) {
+        console.log('Force seeding: clearing existing data...');
+        // Clear existing data if forcing
+        db.exec('DELETE FROM ious');
+        db.exec('DELETE FROM spendings');
+        db.exec('DELETE FROM categories');
+        db.exec('DELETE FROM users');
+      }
+      
+      console.log('Seeding database with initial data...');
+      
+      // Insert users
+      const insertUser = db.prepare('INSERT INTO users (name, budget_cap) VALUES (?, ?)');
+      insertUser.run('Bert', 3000);
+      insertUser.run('Sam', 3000);
 
-    // Insert categories with colors
-    const insertCategory = db.prepare('INSERT INTO categories (name, emoji, color) VALUES (?, ?, ?)');
-    insertCategory.run('Food', '🍔', '#EF4444'); // Red
-    insertCategory.run('Grocery', '🛒', '#10B981'); // Green
-    insertCategory.run('Online Shopping', '📦', '#3B82F6'); // Blue
-    insertCategory.run('Transport', '🚗', '#F59E0B'); // Yellow
-    insertCategory.run('Entertainment', '🎬', '#8B5CF6'); // Purple
-    insertCategory.run('Bills', '💡', '#6B7280'); // Gray
+      // Insert categories with colors
+      const insertCategory = db.prepare('INSERT INTO categories (name, emoji, color) VALUES (?, ?, ?)');
+      insertCategory.run('Food', '🍔', '#EF4444'); // Red
+      insertCategory.run('Grocery', '🛒', '#10B981'); // Green
+      insertCategory.run('Online Shopping', '📦', '#3B82F6'); // Blue
+      insertCategory.run('Transport', '🚗', '#F59E0B'); // Yellow
+      insertCategory.run('Entertainment', '🎬', '#8B5CF6'); // Purple
+      insertCategory.run('Bills', '💡', '#6B7280'); // Gray
 
-    // No sample data - start with clean database for production
-    console.log('Database initialized with users and categories, ready for production');
+      // Verify users were created
+      const finalUserCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+      console.log(`Database initialized with ${finalUserCount.count} users and categories, ready for production`);
+    } else {
+      console.log('Database already contains data, skipping seed');
+    }
+  } catch (error) {
+    console.error('Error seeding database:', error);
+    throw error;
   }
 };
 
