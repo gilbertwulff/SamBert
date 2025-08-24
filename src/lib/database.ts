@@ -4,6 +4,8 @@ import { User, Category, Spending, SpendingWithDetails, IOU, IOUWithDetails } fr
 
 // Initialize database
 const dbPath = path.join(process.cwd(), 'sambert.db');
+console.log('Database path:', dbPath);
+
 const db = new Database(dbPath);
 
 // Enable foreign keys
@@ -111,8 +113,18 @@ export const seedData = (force = false) => {
 };
 
 // Initialize database and seed data
-initDB();
-seedData();
+try {
+  console.log('Initializing database tables...');
+  initDB();
+  console.log('Database tables initialized successfully');
+  
+  console.log('Starting database seeding...');
+  seedData();
+  console.log('Database seeding completed');
+} catch (error) {
+  console.error('Failed to initialize database:', error);
+  throw error;
+}
 
 // Database functions
 export const getUsers = (): User[] => {

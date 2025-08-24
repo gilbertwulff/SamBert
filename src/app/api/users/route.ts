@@ -3,10 +3,31 @@ import { getUsers, getUserById, updateUserBudget } from '@/lib/database';
 
 export async function GET() {
   try {
-    const users = getUsers();
-    return NextResponse.json(users);
+    console.log('API: Attempting to fetch users...');
+    
+    // Try database first
+    try {
+      const users = getUsers();
+      console.log('API: Users fetched from database successfully:', users.length);
+      return NextResponse.json(users);
+    } catch (dbError) {
+      console.error('Database error, using fallback users:', dbError);
+      
+      // Fallback to hardcoded users for Vercel
+      const fallbackUsers = [
+        { id: 1, name: 'Bert', budgetCap: 3000 },
+        { id: 2, name: 'Sam', budgetCap: 3000 }
+      ];
+      
+      console.log('API: Using fallback users');
+      return NextResponse.json(fallbackUsers);
+    }
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+    console.error('API: Complete failure:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch users',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
