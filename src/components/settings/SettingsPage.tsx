@@ -154,7 +154,15 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
       if (result.success) {
         setSeedMessage(`✅ Success! ${result.data.userCount} users and ${result.data.categoryCount} categories created.`);
         // Refresh users list
-        fetchData();
+        const fetchUsers = async () => {
+          try {
+            const usersData = await getUsers();
+            setUsers(usersData);
+          } catch (error) {
+            console.error('Failed to fetch users:', error);
+          }
+        };
+        fetchUsers();
       } else {
         setSeedMessage(`❌ Error: ${result.error}`);
       }
