@@ -185,6 +185,106 @@ export async function deleteSpending(id: number): Promise<void> {
   }
 }
 
+export async function getSpendingsWithDetails() {
+  try {
+    const { rows } = await sql`
+      SELECT 
+        s.*,
+        c.name as category_name,
+        c.emoji as category_emoji,
+        c.color as category_color
+      FROM spendings s
+      JOIN categories c ON s.category_id = c.id
+      ORDER BY s.date DESC
+    `;
+    
+    return rows.map((row: Record<string, unknown>) => ({
+      id: row.id,
+      userId: row.user_id,
+      title: row.title,
+      amount: Number(row.amount),
+      categoryId: row.category_id,
+      notes: row.notes || '',
+      date: row.date,
+      isShared: row.is_shared,
+      userName: row.user_id === 1 ? 'Bert' : 'Sam',
+      categoryName: row.category_name,
+      categoryEmoji: row.category_emoji,
+      categoryColor: row.category_color
+    }));
+  } catch (error) {
+    console.error('Error getting spendings with details:', error);
+    throw error;
+  }
+}
+
+export async function addSharedSpending(
+  title: string,
+  amount: number,
+  categoryId: number,
+  notes?: string,
+  payingUserId?: number
+) {
+  try {
+    const amountPerPerson = amount / 2;
+    
+    if (payingUserId) {
+      const otherUserId = payingUserId === 1 ? 2 : 1;
+      
+      // Add expense for the person who paid
+      const spending = await addSpending({
+        userId: payingUserId,
+        title,
+        amount: amountPerPerson,
+        categoryId,
+        notes: notes || '',
+        date: new Date().toISOString(),
+        isShared: true
+      });
+      
+      // Add IOU for the other person
+      await addIOU({
+        fromUserId: otherUserId,
+        toUserId: payingUserId,
+        amount: amountPerPerson,
+        title,
+        notes: notes || '',
+        categoryId,
+        date: new Date().toISOString(),
+        status: 'pending'
+      });
+      
+      return [spending];
+    } else {
+      // Add expenses for both users
+      const spending1 = await addSpending({
+        userId: 1,
+        title,
+        amount: amountPerPerson,
+        categoryId,
+        notes: notes || '',
+        date: new Date().toISOString(),
+        isShared: true
+      });
+      
+      const spending2 = await addSpending({
+        userId: 2,
+        title,
+        amount: amountPerPerson,
+        categoryId,
+        notes: notes || '',
+        date: new Date().toISOString(),
+        isShared: true
+      });
+      
+      return [spending1, spending2];
+    }
+  } catch (error) {
+    console.error('Error adding shared spending:', error);
+    throw error;
+  }
+}
+
 // IOU functions
 export async function getIOUs(): Promise<IOU[]> {
   try {
@@ -207,6 +307,41 @@ export async function getIOUs(): Promise<IOU[]> {
     }));
   } catch (error) {
     console.error('Error fetching IOUs:', error);
+    throw error;
+  }
+}
+
+export async function getIOUsWithDetails() {
+  try {
+    const { rows } = await sql`
+      SELECT 
+        i.*,
+        c.name as category_name,
+        c.emoji as category_emoji,
+        c.color as category_color
+      FROM ious i
+      JOIN categories c ON i.category_id = c.id
+      ORDER BY i.date DESC
+    `;
+    
+    return rows.map((row: Record<string, unknown>) => ({
+      id: row.id,
+      fromUserId: row.from_user_id,
+      toUserId: row.to_user_id,
+      title: row.title,
+      amount: Number(row.amount),
+      categoryId: row.category_id,
+      notes: row.notes || '',
+      date: row.date,
+      status: row.status,
+      fromUserName: row.from_user_id === 1 ? 'Bert' : 'Sam',
+      toUserName: row.to_user_id === 1 ? 'Bert' : 'Sam',
+      categoryName: row.category_name,
+      categoryEmoji: row.category_emoji,
+      categoryColor: row.category_color
+    }));
+  } catch (error) {
+    console.error('Error getting IOUs with details:', error);
     throw error;
   }
 }

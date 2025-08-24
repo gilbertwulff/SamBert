@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getSpendingsWithDetails, addSpending, addSharedSpending, deleteSpending } from '@/lib/database';
+import { getSpendingsWithDetails, addSpending, addSharedSpending, deleteSpending } from '@/lib/postgres';
 
 export async function GET() {
   try {
-    const spendings = getSpendingsWithDetails();
+    const spendings = await getSpendingsWithDetails();
     return NextResponse.json(spendings);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch spendings' }, { status: 500 });
@@ -16,10 +16,10 @@ export async function POST(request: Request) {
     
     if (body.isShared) {
       const { title, amount, categoryId, notes, userId } = body;
-      const spendings = addSharedSpending(title, amount, categoryId, notes, userId);
+      const spendings = await addSharedSpending(title, amount, categoryId, notes, userId);
       return NextResponse.json(spendings);
     } else {
-      const newSpending = addSpending(body);
+      const newSpending = await addSpending(body);
       return NextResponse.json(newSpending);
     }
   } catch (error) {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { spendingId } = await request.json();
-    deleteSpending(spendingId);
+    await deleteSpending(spendingId);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to delete spending:', error);

@@ -4,7 +4,7 @@ import {
   getCombinedMonthlyTotal, 
   getSharedExpensesTotal, 
   getCategoryBreakdown 
-} from '@/lib/database';
+} from '@/lib/postgres';
 
 export async function GET(request: Request) {
   try {
@@ -17,30 +17,30 @@ export async function GET(request: Request) {
     switch (type) {
       case 'monthly':
         if (userId && month !== null && year !== null) {
-          const total = getMonthlyTotal(parseInt(userId), parseInt(month), parseInt(year));
+          const total = await getMonthlyTotal(parseInt(userId), parseInt(month), parseInt(year));
           return NextResponse.json({ total });
         }
         break;
       
       case 'combined':
         if (month !== null && year !== null) {
-          const total = getCombinedMonthlyTotal(parseInt(month), parseInt(year));
+          const total = await getCombinedMonthlyTotal(parseInt(month), parseInt(year));
           return NextResponse.json({ total });
         }
         break;
       
       case 'shared':
         if (month !== null && year !== null) {
-          const total = getSharedExpensesTotal(parseInt(month), parseInt(year));
+          const total = await getSharedExpensesTotal(parseInt(month), parseInt(year));
           return NextResponse.json({ total });
         }
         break;
       
       case 'category':
-        const userIdParam = userId ? parseInt(userId) : undefined;
-        const monthParam = month !== null ? parseInt(month) : undefined;
-        const yearParam = year !== null ? parseInt(year) : undefined;
-        const breakdown = getCategoryBreakdown(userIdParam, monthParam, yearParam);
+        const userIdParam = userId ? parseInt(userId) : 1;
+        const monthParam = month !== null ? parseInt(month) : new Date().getMonth();
+        const yearParam = year !== null ? parseInt(year) : new Date().getFullYear();
+        const breakdown = await getCategoryBreakdown(userIdParam, monthParam, yearParam);
         return NextResponse.json(breakdown);
     }
 
