@@ -1,18 +1,11 @@
 import { sql } from '@vercel/postgres';
-import { User, Category, Spending, SpendingWithDetails, IOU, IOUWithDetails } from './types';
+import { Category, Spending, IOU } from './types';
 
 // Initialize database tables
 export async function initializeDatabase() {
   try {
-    // Create users table
-    await sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        budget_cap DECIMAL(10,2) DEFAULT 3000
-      )
-    `;
-
+    // Note: Users are now hardcoded, no users table needed
+    
     // Create categories table
     await sql`
       CREATE TABLE IF NOT EXISTS categories (
@@ -27,7 +20,7 @@ export async function initializeDatabase() {
     await sql`
       CREATE TABLE IF NOT EXISTS spendings (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
+        user_id INTEGER NOT NULL CHECK (user_id IN (1, 2)),
         title VARCHAR(255) NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
         category_id INTEGER REFERENCES categories(id),
@@ -41,8 +34,8 @@ export async function initializeDatabase() {
     await sql`
       CREATE TABLE IF NOT EXISTS ious (
         id SERIAL PRIMARY KEY,
-        from_user_id INTEGER REFERENCES users(id),
-        to_user_id INTEGER REFERENCES users(id),
+        from_user_id INTEGER NOT NULL CHECK (from_user_id IN (1, 2)),
+        to_user_id INTEGER NOT NULL CHECK (to_user_id IN (1, 2)),
         title VARCHAR(255) NOT NULL,
         amount DECIMAL(10,2) NOT NULL,
         category_id INTEGER REFERENCES categories(id),
@@ -63,23 +56,8 @@ export async function initializeDatabase() {
 // Seed initial data
 export async function seedInitialData() {
   try {
-    // Check if users already exist
-    const existingUsers = await sql`SELECT COUNT(*) as count FROM users`;
-    const userCount = parseInt(existingUsers.rows[0].count as string);
+    // Note: Users are now hardcoded (Bert=1, Sam=2), no database seeding needed
     
-    if (userCount === 0) {
-      console.log('Seeding initial users...');
-      
-      // Insert Bert and Sam
-      await sql`
-        INSERT INTO users (name, budget_cap) VALUES 
-        ('Bert', 3000),
-        ('Sam', 3000)
-      `;
-      
-      console.log('Initial users seeded successfully');
-    }
-
     // Check if categories already exist
     const existingCategories = await sql`SELECT COUNT(*) as count FROM categories`;
     const categoryCount = parseInt(existingCategories.rows[0].count as string);
@@ -108,46 +86,7 @@ export async function seedInitialData() {
   }
 }
 
-// User functions
-export async function getUsers(): Promise<User[]> {
-  try {
-    const result = await sql`SELECT id, name, budget_cap FROM users ORDER BY id`;
-    return result.rows.map(row => ({
-      id: row.id as number,
-      name: row.name as string,
-      budgetCap: row.budget_cap ? parseFloat(row.budget_cap as string) : undefined
-    }));
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    throw error;
-  }
-}
-
-export async function getUserById(id: number): Promise<User | undefined> {
-  try {
-    const result = await sql`SELECT id, name, budget_cap FROM users WHERE id = ${id}`;
-    if (result.rows.length === 0) return undefined;
-    
-    const row = result.rows[0];
-    return {
-      id: row.id as number,
-      name: row.name as string,
-      budgetCap: row.budget_cap ? parseFloat(row.budget_cap as string) : undefined
-    };
-  } catch (error) {
-    console.error('Error fetching user by ID:', error);
-    throw error;
-  }
-}
-
-export async function updateUserBudget(userId: number, budgetCap: number): Promise<void> {
-  try {
-    await sql`UPDATE users SET budget_cap = ${budgetCap} WHERE id = ${userId}`;
-  } catch (error) {
-    console.error('Error updating user budget:', error);
-    throw error;
-  }
-}
+// Note: User functions moved to static-users.ts since users are now hardcoded
 
 // Category functions
 export async function getCategories(): Promise<Category[]> {

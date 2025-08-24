@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getCategories, addCategory } from '@/lib/postgres';
+import { getCategories, addCategory, initializeDatabase, seedInitialData } from '@/lib/postgres';
 
 export async function GET() {
   try {
+    // Auto-initialize database if needed (for categories only)
+    try {
+      await initializeDatabase();
+      await seedInitialData();
+    } catch (initError) {
+      console.log('Database already initialized or init failed:', initError);
+    }
+    
     const categories = await getCategories();
     return NextResponse.json(categories);
   } catch (error) {

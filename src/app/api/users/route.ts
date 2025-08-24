@@ -1,19 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getUsers, getUserById, updateUserBudget, initializeDatabase, seedInitialData } from '@/lib/postgres';
+import { getStaticUsers, updateStaticUserBudget } from '@/lib/static-users';
 
 export async function GET() {
   try {
-    console.log('API: Fetching users from Postgres...');
-    
-    // Auto-initialize database if needed
-    try {
-      await initializeDatabase();
-      await seedInitialData();
-    } catch (initError) {
-      console.log('Database already initialized or init failed:', initError);
-    }
-    
-    const users = await getUsers();
+    console.log('API: Fetching static users...');
+    const users = getStaticUsers();
     console.log('API: Users fetched successfully:', users.length);
     return NextResponse.json(users);
   } catch (error) {
@@ -28,8 +19,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const { userId, budgetCap } = await request.json();
-    await updateUserBudget(userId, budgetCap);
-    const updatedUser = await getUserById(userId);
+    const updatedUser = updateStaticUserBudget(userId, budgetCap);
     return NextResponse.json(updatedUser);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update user budget' }, { status: 500 });

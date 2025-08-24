@@ -77,10 +77,10 @@ A modern, mobile-first budget tracking app designed for couples to manage their 
    - Click "Create Database" → "Postgres"
    - Follow the setup wizard
 4. **Deploy with default settings**
-5. **Initialize the database:**
-   - After deployment, visit: `https://your-app.vercel.app/api/init`
-   - This will create tables and seed Bert & Sam as initial users
-6. **Your app is ready!** Bert and Sam will be available for selection
+5. **Your app is ready!** 
+   - Bert and Sam are hardcoded and instantly available
+   - Database will auto-initialize when first accessed
+   - No manual initialization required
 
 ### Manual Deployment
 
