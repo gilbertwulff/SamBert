@@ -35,7 +35,7 @@ export default function HomePage({ currentUser, onViewAllTransactions }: HomePag
         
         // Convert category breakdown to object for easier lookup
         const categoryMap: {[key: string]: number} = {};
-        categoryBreakdown.forEach((category: any) => {
+        categoryBreakdown.forEach((category: { name: string; value: number }) => {
           categoryMap[category.name] = category.value;
         });
         setCategoryStats(categoryMap);
