@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💰 SamBert - Budget Tracker
 
-## Getting Started
+A modern, mobile-first budget tracking app designed for couples to manage their shared and individual expenses.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 🔐 Simple Authentication
+- Two users: "Bert" and "Sam"
+- Quick user selection on app launch
+- Session persistence with localStorage
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### ➕ Add Expenses
+- **Required fields**: Title, Amount, Category
+- **Optional**: Notes (toggle to show)
+- **Quick category buttons**: Dynamic sizing based on content
+- **Split expenses**: Toggle to automatically divide amount between both users
+- **Time tracking**: Expenses logged with timestamp
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📊 Dashboard & Analytics
+- **Monthly totals**: Individual, combined, and shared spending views
+- **Budget tracking**: Set monthly budget caps with progress indicators
+- **Category breakdown**: Pie chart showing spending by category
+- **Quick stats**: Food, Online Shopping, Entertainment summary cards
+- **Recent expenses**: Color-coded chronological list
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 💕 Pinjam (IOUs)
+- Track money owed between partners
+- "I Owe" and "Owed to Me" tabs
+- Approve/reject pending IOUs
+- Mark as paid to convert to expenses (with 💕 emoji)
+- Notes support for additional context
 
-## Learn More
+### 🗑️ Delete Functionality
+- Delete expenses and IOUs with confirmation dialogs
+- Available in "All Transactions" view
+- Red hover states for delete buttons
 
-To learn more about Next.js, take a look at the following resources:
+### 📱 Mobile-First Design
+- PWA support with manifest.json
+- iOS-specific meta tags for home screen app
+- Responsive design optimized for mobile devices
+- Modern green color scheme (#B5FFE1, #93E5AB, #65B891)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Framework**: Next.js 14 (App Router)
+- **Database**: SQLite with better-sqlite3
+- **UI Components**: Shadcn/UI + Tailwind CSS
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **PWA**: Manifest.json for native app experience
 
-## Deploy on Vercel
+## 🚀 Getting Started
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Open your browser** and navigate to `http://localhost:3000`
+
+## 📦 Deployment
+
+### Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Deploy with default settings
+4. The app will automatically create a SQLite database on first run
+
+### Manual Deployment
+
+1. Build the application:
+   ```bash
+   npm run build
+   ```
+
+2. Start the production server:
+   ```bash
+   npm start
+   ```
+
+### Environment Variables
+
+No environment variables required. The app uses a local SQLite database that is created automatically.
+
+## 📱 Mobile App Experience
+
+Add to your home screen for a native app experience:
+- **iOS**: Safari > Share > Add to Home Screen
+- **Android**: Chrome > Menu > Add to Home Screen
+
+Features full-screen mode, custom icons, and splash screens.
+
+## 📱 How to Use
+
+1. **Select User**: Choose between "Bert" or "Sam" on the welcome screen
+2. **View Dashboard**: See spending analytics, budget progress, and charts
+3. **Add Expense**: Use the floating + button to add new expenses
+4. **Track IOUs**: Use the Pinjam tab to manage money owed
+5. **View Transactions**: Click "View More" to see all transactions with delete options
+6. **Manage Settings**: Configure budgets and user profiles
+
+## 🎨 Design Features
+
+- **Clean UI**: Modern card-based layout with green color scheme
+- **Emoji-driven**: Visual category identification
+- **Quick actions**: Minimal taps to add expenses
+- **Color coding**: Category colors on transaction lists
+- **Confirmation dialogs**: Prevent accidental deletions
+- **Dynamic buttons**: Content-based sizing for categories
+
+## 🔄 Data Architecture
+
+- **API Routes**: Next.js API endpoints for all database operations
+- **Client-side wrapper**: Abstracted fetch calls with error handling
+- **SQLite database**: Persistent local storage
+- **Type safety**: Full TypeScript interfaces
+- **Real-time updates**: Automatic refresh after data changes
+
+---
+
+Built with ❤️ for couples who want to manage their finances together!
