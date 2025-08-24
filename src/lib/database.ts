@@ -122,7 +122,7 @@ export const addCategory = (name: string, emoji: string, color: string = '#6B728
 
 export const getSpendings = (): Spending[] => {
   const stmt = db.prepare('SELECT * FROM spendings ORDER BY date DESC');
-  return stmt.all().map((row: Record<string, unknown>) => ({
+  return (stmt.all() as Record<string, unknown>[]).map((row: Record<string, unknown>) => ({
     id: row.id,
     userId: row.user_id,
     title: row.title,
@@ -148,7 +148,7 @@ export const getSpendingsWithDetails = (): SpendingWithDetails[] => {
     ORDER BY s.date DESC
   `);
   
-  return stmt.all().map((row: Record<string, unknown>) => ({
+  return (stmt.all() as Record<string, unknown>[]).map((row: Record<string, unknown>) => ({
     id: row.id,
     userId: row.user_id,
     title: row.title,
@@ -179,7 +179,7 @@ export const addSpending = (spending: Omit<Spending, 'id'>): Spending => {
     spending.notes,
     spending.date,
     spending.isShared ? 1 : 0
-  ) as { total: number };
+  ) as Record<string, unknown>;
   
   return {
     id: result.id,
@@ -288,7 +288,7 @@ export const getSharedExpensesTotal = (month: number, year: number): number => {
     AND strftime('%Y', s.date) = ?
   `);
   
-  const sharedSpendings = stmt.all(String(month + 1).padStart(2, '0'), String(year)) as { amount: number }[];
+  const sharedSpendings = stmt.all(String(month + 1).padStart(2, '0'), String(year)) as { title: string; date: string; amount: number }[];
   
   // Avoid double counting - sum unique shared expenses
   const uniqueSharedExpenses = new Map();
@@ -334,7 +334,7 @@ export const getCategoryBreakdown = (userId?: number, month?: number, year?: num
 // IOU functions
 export const getIOUs = (): IOU[] => {
   const stmt = db.prepare('SELECT * FROM ious ORDER BY date DESC');
-  return stmt.all().map((row: Record<string, unknown>) => ({
+  return (stmt.all() as Record<string, unknown>[]).map((row: Record<string, unknown>) => ({
     id: row.id,
     fromUserId: row.from_user_id,
     toUserId: row.to_user_id,
@@ -362,7 +362,7 @@ export const getIOUsWithDetails = (): IOUWithDetails[] => {
     ORDER BY i.date DESC
   `);
   
-  return stmt.all().map((row: Record<string, unknown>) => ({
+  return (stmt.all() as Record<string, unknown>[]).map((row: Record<string, unknown>) => ({
     id: row.id,
     fromUserId: row.from_user_id,
     toUserId: row.to_user_id,
@@ -395,7 +395,7 @@ export const addIOU = (iou: Omit<IOU, 'id'>): IOU => {
     iou.notes,
     iou.date,
     iou.status
-  ) as { total: number };
+  ) as Record<string, unknown>;
   
   return {
     id: result.id,

@@ -80,7 +80,7 @@ export default function CategoryChart({
             {data.payload.emoji} {data.payload.name}
           </p>
           <p className="text-blue-600">
-            RM{data.value.toFixed(2)}
+            RM{data.payload.value.toFixed(2)}
           </p>
         </div>
       );
@@ -105,7 +105,7 @@ export default function CategoryChart({
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ emoji, value }) => `${emoji} RM${value.toFixed(0)}`}
+                label={({ emoji, value }) => `${emoji} RM${value?.toFixed(0) || '0'}`}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
