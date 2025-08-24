@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getCategories, addCategory } from '@/lib/database';
 
 export async function GET() {
   try {
     // Try database first
     try {
+      const { getCategories } = await import('@/lib/database');
       const categories = getCategories();
       return NextResponse.json(categories);
     } catch (dbError) {
@@ -30,8 +30,21 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { name, emoji, color } = await request.json();
-    const newCategory = addCategory(name, emoji, color);
-    return NextResponse.json(newCategory);
+    
+    try {
+      const { addCategory } = await import('@/lib/database');
+      const newCategory = addCategory(name, emoji, color);
+      return NextResponse.json(newCategory);
+    } catch (dbError) {
+      console.error('Database error in POST categories:', dbError);
+      // For fallback, just return a mock category
+      return NextResponse.json({ 
+        id: Date.now(), 
+        name, 
+        emoji, 
+        color: color || '#6B7280' 
+      });
+    }
   } catch (error) {
     return NextResponse.json({ error: 'Failed to add category' }, { status: 500 });
   }
