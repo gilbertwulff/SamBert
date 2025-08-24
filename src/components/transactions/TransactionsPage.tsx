@@ -280,7 +280,7 @@ export default function TransactionsPage({ currentUser, onBack }: TransactionsPa
             <DialogHeader>
               <DialogTitle>Delete Expense</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete "{expenseToDelete?.title}"? This action cannot be undone.
+                Are you sure you want to delete &quot;{expenseToDelete?.title}&quot;? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <div className="flex gap-2 pt-4">

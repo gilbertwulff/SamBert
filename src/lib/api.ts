@@ -59,12 +59,13 @@ export const addSharedSpending = async (
   title: string,
   amount: number,
   categoryId: number,
-  notes?: string
+  notes?: string,
+  userId?: number
 ): Promise<Spending[]> => {
   const response = await fetch('/api/spendings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, amount, categoryId, notes, isShared: true })
+    body: JSON.stringify({ title, amount, categoryId, notes, isShared: true, userId })
   });
   if (!response.ok) throw new Error('Failed to add shared spending');
   return response.json();

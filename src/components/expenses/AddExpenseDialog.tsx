@@ -62,7 +62,7 @@ export default function AddExpenseDialog({
       const date = new Date().toISOString();
 
       if (isShared) {
-        await addSharedSpending(title.trim(), amountNum, selectedCategory.id, notes.trim() || undefined);
+        await addSharedSpending(title.trim(), amountNum, selectedCategory.id, notes.trim() || undefined, currentUser.id);
       } else {
         await addSpending({
           userId: currentUser.id,

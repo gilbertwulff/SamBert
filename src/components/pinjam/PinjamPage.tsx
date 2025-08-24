@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { User, Category, IOUWithDetails } from '@/lib/types';
 import { getCategories, getIOUsForUser, addIOU, updateIOUStatus, addSpending, deleteIOU } from '@/lib/db';
@@ -432,7 +432,7 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
             <DialogHeader>
               <DialogTitle>Delete Pinjam</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete "{iouToDelete?.title}"? This action cannot be undone.
+                Are you sure you want to delete &quot;{iouToDelete?.title}&quot;? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <div className="flex gap-2 pt-4">

@@ -185,7 +185,7 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
               <div>
                 <div className="flex items-center space-x-2 mb-2">
                   <span>{currentUser.id === 1 ? '👤' : '💕'}</span>
-                  <span className="font-medium">{currentUser.name}'s Monthly Budget</span>
+                  <span className="font-medium">{currentUser.name}&apos;s Monthly Budget</span>
                 </div>
                 
                 <form onSubmit={handleBudgetSubmit} className="space-y-3">

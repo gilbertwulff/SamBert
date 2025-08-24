@@ -21,7 +21,7 @@ export default function CategoryChart({
   currentYear, 
   viewMode 
 }: CategoryChartProps) {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<{ name: string; value: number; emoji: string; fill: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function CategoryChart({
     );
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number; emoji: string } }> }) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       return (

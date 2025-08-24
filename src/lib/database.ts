@@ -122,7 +122,7 @@ export const addCategory = (name: string, emoji: string, color: string = '#6B728
 
 export const getSpendings = (): Spending[] => {
   const stmt = db.prepare('SELECT * FROM spendings ORDER BY date DESC');
-  return stmt.all().map((row: any) => ({
+  return stmt.all().map((row: Record<string, unknown>) => ({
     id: row.id,
     userId: row.user_id,
     title: row.title,
@@ -148,7 +148,7 @@ export const getSpendingsWithDetails = (): SpendingWithDetails[] => {
     ORDER BY s.date DESC
   `);
   
-  return stmt.all().map((row: any) => ({
+  return stmt.all().map((row: Record<string, unknown>) => ({
     id: row.id,
     userId: row.user_id,
     title: row.title,
@@ -179,7 +179,7 @@ export const addSpending = (spending: Omit<Spending, 'id'>): Spending => {
     spending.notes,
     spending.date,
     spending.isShared ? 1 : 0
-  ) as any;
+  ) as { total: number };
   
   return {
     id: result.id,
@@ -197,32 +197,60 @@ export const addSharedSpending = (
   title: string,
   amount: number,
   categoryId: number,
-  notes?: string
+  notes?: string,
+  payingUserId?: number
 ): Spending[] => {
   const date = new Date().toISOString();
   const amountPerPerson = amount / 2;
   
-  const spending1 = addSpending({
-    userId: 1,
-    title,
-    amount: amountPerPerson,
-    categoryId,
-    notes,
-    date,
-    isShared: true
-  });
-  
-  const spending2 = addSpending({
-    userId: 2,
-    title,
-    amount: amountPerPerson,
-    categoryId,
-    notes,
-    date,
-    isShared: true
-  });
-  
-  return [spending1, spending2];
+  // If payingUserId is specified, create expense for payer and IOU for the other person
+  if (payingUserId) {
+    const otherUserId = payingUserId === 1 ? 2 : 1;
+    
+    // Add expense for the person who paid
+    const spending = addSpending({
+      userId: payingUserId,
+      title,
+      amount: amountPerPerson,
+      categoryId,
+      notes,
+      date,
+      isShared: true
+    });
+    
+    // Create IOU for the other person's half
+    const insertIOU = db.prepare(`
+      INSERT INTO ious (from_user_id, to_user_id, title, amount, category_id, notes, date, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    insertIOU.run(otherUserId, payingUserId, `Split: ${title}`, amountPerPerson, categoryId, notes, date, 'pending');
+    
+    return [spending];
+  } else {
+    // Original logic: Add expense for both users (for backward compatibility)
+    const spending1 = addSpending({
+      userId: 1,
+      title,
+      amount: amountPerPerson,
+      categoryId,
+      notes,
+      date,
+      isShared: true
+    });
+    
+    const spending2 = addSpending({
+      userId: 2,
+      title,
+      amount: amountPerPerson,
+      categoryId,
+      notes,
+      date,
+      isShared: true
+    });
+    
+    return [spending1, spending2];
+  }
 };
 
 // Analytics functions
@@ -260,7 +288,7 @@ export const getSharedExpensesTotal = (month: number, year: number): number => {
     AND strftime('%Y', s.date) = ?
   `);
   
-  const sharedSpendings = stmt.all(String(month + 1).padStart(2, '0'), String(year)) as any[];
+  const sharedSpendings = stmt.all(String(month + 1).padStart(2, '0'), String(year)) as { amount: number }[];
   
   // Avoid double counting - sum unique shared expenses
   const uniqueSharedExpenses = new Map();
@@ -285,7 +313,7 @@ export const getCategoryBreakdown = (userId?: number, month?: number, year?: num
     WHERE 1=1
   `;
   
-  const params: any[] = [];
+  const params: (string | number)[] = [];
   
   if (userId) {
     query += ' AND s.user_id = ?';
@@ -306,7 +334,7 @@ export const getCategoryBreakdown = (userId?: number, month?: number, year?: num
 // IOU functions
 export const getIOUs = (): IOU[] => {
   const stmt = db.prepare('SELECT * FROM ious ORDER BY date DESC');
-  return stmt.all().map((row: any) => ({
+  return stmt.all().map((row: Record<string, unknown>) => ({
     id: row.id,
     fromUserId: row.from_user_id,
     toUserId: row.to_user_id,
@@ -334,7 +362,7 @@ export const getIOUsWithDetails = (): IOUWithDetails[] => {
     ORDER BY i.date DESC
   `);
   
-  return stmt.all().map((row: any) => ({
+  return stmt.all().map((row: Record<string, unknown>) => ({
     id: row.id,
     fromUserId: row.from_user_id,
     toUserId: row.to_user_id,
@@ -367,7 +395,7 @@ export const addIOU = (iou: Omit<IOU, 'id'>): IOU => {
     iou.notes,
     iou.date,
     iou.status
-  ) as any;
+  ) as { total: number };
   
   return {
     id: result.id,
@@ -389,7 +417,7 @@ export const updateIOUStatus = (iouId: number, status: 'approved' | 'rejected'):
   // If approved, convert to expense
   if (status === 'approved') {
     const iouStmt = db.prepare('SELECT * FROM ious WHERE id = ?');
-    const iou = iouStmt.get(iouId) as any;
+    const iou = iouStmt.get(iouId) as { from_user_id: number; title: string; amount: number; category_id: number; notes?: string } | undefined;
     
     if (iou) {
       addSpending({

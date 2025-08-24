@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     
     if (body.isShared) {
-      const { title, amount, categoryId, notes } = body;
-      const spendings = addSharedSpending(title, amount, categoryId, notes);
+      const { title, amount, categoryId, notes, userId } = body;
+      const spendings = addSharedSpending(title, amount, categoryId, notes, userId);
       return NextResponse.json(spendings);
     } else {
       const newSpending = addSpending(body);
