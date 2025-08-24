@@ -2,28 +2,40 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
   try {
-    // Import database functions dynamically to ensure fresh execution
-    const { seedData, getUsers, getCategories } = await import('@/lib/database');
+    const { getStaticUsers } = await import('@/lib/static-users');
+    const { getStaticCategories } = await import('@/lib/static-categories');
     
     console.log('Manual seeding triggered');
     
-    // Force re-run the seeding
-    await seedData();
+    const users = getStaticUsers();
+    let categories;
+    let seedStatus = 'unknown';
     
-    // Get current data to verify
-    const users = getUsers();
-    const categories = getCategories();
-    
-    console.log('Seeding complete. Users:', users.length, 'Categories:', categories.length);
+    // Try to seed Postgres first
+    try {
+      const { initializeDatabase, seedInitialData, getCategories } = await import('@/lib/postgres');
+      
+      await initializeDatabase();
+      await seedInitialData();
+      categories = await getCategories();
+      seedStatus = 'postgres_seeded';
+      
+      console.log('Postgres seeding complete. Users:', users.length, 'Categories:', categories.length);
+    } catch (postgresError) {
+      console.error('Postgres seeding failed, using static categories:', postgresError);
+      categories = getStaticCategories();
+      seedStatus = 'postgres_failed_using_static';
+    }
     
     return NextResponse.json({
       success: true,
-      message: 'Database seeding completed',
+      message: `Database seeding completed (${seedStatus})`,
       data: {
         users: users,
         categories: categories,
         userCount: users.length,
-        categoryCount: categories.length
+        categoryCount: categories.length,
+        seedStatus: seedStatus
       }
     });
   } catch (error) {
@@ -41,20 +53,33 @@ export async function POST() {
 
 export async function GET() {
   try {
-    // Just check current state without seeding
-    const { getUsers, getCategories } = await import('@/lib/database');
+    const { getStaticUsers } = await import('@/lib/static-users');
+    const { getStaticCategories } = await import('@/lib/static-categories');
     
-    const users = getUsers();
-    const categories = getCategories();
+    const users = getStaticUsers();
+    let categories;
+    let databaseStatus = 'unknown';
+    
+    // Try to get categories from Postgres first
+    try {
+      const { getCategories } = await import('@/lib/postgres');
+      categories = await getCategories();
+      databaseStatus = 'postgres_connected';
+    } catch (postgresError) {
+      console.log('Postgres not available, using static categories');
+      categories = getStaticCategories();
+      databaseStatus = 'using_static_fallback';
+    }
     
     return NextResponse.json({
       success: true,
-      message: 'Database status retrieved',
+      message: `Database status retrieved (${databaseStatus})`,
       data: {
         users: users,
         categories: categories,
         userCount: users.length,
-        categoryCount: categories.length
+        categoryCount: categories.length,
+        databaseStatus: databaseStatus
       }
     });
   } catch (error) {
