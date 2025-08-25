@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { User, Category, IOUWithDetails } from '@/lib/types';
-import { getCategories, getIOUsForUser, addIOU, updateIOUStatus, addSpending, deleteIOU } from '@/lib/db';
+import { getIOUsForUser, addIOU, updateIOUStatus, addSpending, deleteIOU } from '@/lib/api';
+import { STATIC_CATEGORIES } from '@/lib/static-categories';
 import { Plus, Check, X, Trash2 } from 'lucide-react';
 
 interface PinjamPageProps {
@@ -16,7 +18,8 @@ interface PinjamPageProps {
 export default function PinjamPage({ currentUser }: PinjamPageProps) {
   const [activeTab, setActiveTab] = useState<'sent' | 'received'>('sent');
   const [isAddPinjamOpen, setIsAddPinjamOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  // Use static categories instead of loading from database
+  const categories = STATIC_CATEGORIES;
   const [ious, setIOUs] = useState<IOUWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -28,17 +31,17 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
   const [showNotes, setShowNotes] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [iouToDelete, setIOUToDelete] = useState<IOUWithDetails | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isApproving, setIsApproving] = useState<number | null>(null);
+  const [isRejecting, setIsRejecting] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchData = async () => {
     try {
-      const [categoriesData, iousData] = await Promise.all([
-        getCategories(),
-        getIOUsForUser(currentUser.id, activeTab)
-      ]);
-      setCategories(categoriesData);
+      const iousData = await getIOUsForUser(currentUser.id, activeTab);
       setIOUs(iousData);
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      console.error('Failed to fetch IOUs:', error);
     } finally {
       setLoading(false);
     }
@@ -54,6 +57,7 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
   const handleAddPinjam = async () => {
     if (!title.trim() || !amount || !selectedCategory) return;
 
+    setIsSubmitting(true);
     try {
       const otherUserId = currentUser.id === 1 ? 2 : 1;
       await addIOU({
@@ -79,24 +83,32 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
       fetchData();
     } catch (error) {
       console.error('Failed to add pinjam:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleApprove = async (iouId: number) => {
+    setIsApproving(iouId);
     try {
       await updateIOUStatus(iouId, 'approved');
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Failed to approve pinjam:', error);
+    } finally {
+      setIsApproving(null);
     }
   };
 
   const handleReject = async (iouId: number) => {
+    setIsRejecting(iouId);
     try {
       await updateIOUStatus(iouId, 'rejected');
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Failed to reject pinjam:', error);
+    } finally {
+      setIsRejecting(null);
     }
   };
 
@@ -108,6 +120,7 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
   const handleDeleteConfirm = async () => {
     if (!iouToDelete) return;
     
+    setIsDeleting(true);
     try {
       await deleteIOU(iouToDelete.id);
       setDeleteDialogOpen(false);
@@ -115,6 +128,8 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
       fetchData(); // Refresh data
     } catch (error) {
       console.error('Failed to delete pinjam:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -256,17 +271,27 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
                           <Button
                             size="sm"
                             onClick={() => handleApprove(iou.id)}
+                            disabled={isApproving === iou.id}
                             className="bg-green-600 hover:bg-green-700 h-8 w-8 p-0"
                           >
-                            <Check className="h-3 w-3" />
+                            {isApproving === iou.id ? (
+                              <Spinner size="sm" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )}
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleReject(iou.id)}
+                            disabled={isRejecting === iou.id}
                             className="h-8 w-8 p-0"
                           >
-                            <X className="h-3 w-3" />
+                            {isRejecting === iou.id ? (
+                              <Spinner size="sm" />
+                            ) : (
+                              <X className="h-3 w-3" />
+                            )}
                           </Button>
                           <Button
                             size="sm"
@@ -332,29 +357,21 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
               <div>
                 <label className="text-sm font-medium">Category *</label>
                 
-                {loading ? (
-                  <div className="text-center py-4 text-gray-500">
-                    Loading categories...
-                  </div>
-                ) : (
-                  <>
-                    {/* All Categories Grid */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      {categories.map((category) => (
-                        <Button
-                          key={category.id}
-                          type="button"
-                          variant={selectedCategory?.id === category.id ? "default" : "outline"}
-                          className="h-12 text-sm sm:text-sm px-2"
-                          onClick={() => setSelectedCategory(category)}
-                        >
-                          <span className="mr-1">{category.emoji}</span>
-                          <span className="truncate">{category.name}</span>
-                        </Button>
-                        ))}
-                    </div>
-                  </>
-                )}
+                {/* All Categories Grid */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  {categories.map((category) => (
+                    <Button
+                      key={category.id}
+                      type="button"
+                      variant={selectedCategory?.id === category.id ? "default" : "outline"}
+                      className="h-12 text-sm sm:text-sm px-2"
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      <span className="mr-1">{category.emoji}</span>
+                      <span className="truncate">{category.name}</span>
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               {/* Notes Toggle */}
@@ -392,9 +409,16 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={!title.trim() || !amount || !selectedCategory}
+                  disabled={!title.trim() || !amount || !selectedCategory || isSubmitting}
                 >
-                  Add Pinjam
+                  {isSubmitting ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Adding...
+                    </>
+                  ) : (
+                    'Add Pinjam'
+                  )}
                 </Button>
               </div>
             </form>
@@ -425,8 +449,16 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
                 variant="destructive"
                 className="flex-1"
                 onClick={handleDeleteConfirm}
+                disabled={isDeleting}
               >
-                Delete
+                {isDeleting ? (
+                  <>
+                    <Spinner size="sm" className="mr-2" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete'
+                )}
               </Button>
             </div>
           </DialogContent>

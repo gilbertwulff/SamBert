@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { updateUserBudget, getUsers, getMonthlyTotal } from '@/lib/db';
 import { User } from '@/lib/types';
 
@@ -98,6 +99,7 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
   const [loading, setLoading] = useState(true);
   const [seedLoading, setSeedLoading] = useState(false);
   const [seedMessage, setSeedMessage] = useState('');
+  const [budgetLoading, setBudgetLoading] = useState(false);
   
 
   
@@ -123,6 +125,7 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
   const handleBudgetSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setBudgetLoading(true);
     try {
       const amount = parseFloat(budgetAmount);
       if (amount > 0) {
@@ -134,6 +137,8 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
     } catch (error) {
       console.error('Failed to update budget:', error);
       alert('Failed to update budget. Please try again.');
+    } finally {
+      setBudgetLoading(false);
     }
   };
 
@@ -286,9 +291,16 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
                     <Button
                       type="submit"
                       className="flex-1"
-                      disabled={!budgetAmount || parseFloat(budgetAmount) <= 0}
+                      disabled={!budgetAmount || parseFloat(budgetAmount) <= 0 || budgetLoading}
                     >
-                      {currentUser.budgetCap ? 'Update' : 'Set'} Budget
+                      {budgetLoading ? (
+                        <>
+                          <Spinner size="sm" className="mr-2" />
+                          Updating...
+                        </>
+                      ) : (
+                        `${currentUser.budgetCap ? 'Update' : 'Set'} Budget`
+                      )}
                     </Button>
                     
                     {currentUser.budgetCap && (

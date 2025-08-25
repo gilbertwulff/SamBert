@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { getCategories, addSpending, addSharedSpending } from '@/lib/api';
+import { addSpending, addSharedSpending } from '@/lib/api';
+import { STATIC_CATEGORIES } from '@/lib/static-categories';
 import { User, Category } from '@/lib/types';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AddExpenseDialogProps {
   currentUser: User;
@@ -28,27 +30,10 @@ export default function AddExpenseDialog({
   const [isShared, setIsShared] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const categoriesData = await getCategories();
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      fetchCategories();
-    }
-  }, [isOpen]);
-
+  // Use static categories instead of loading from database
+  const categories = STATIC_CATEGORIES;
   const quickCategories = categories.slice(0, 3); // Food, Grocery, Online Shopping
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,13 +117,7 @@ export default function AddExpenseDialog({
           <div>
             <label className="text-sm font-medium">Category *</label>
             
-            {loading ? (
-              <div className="text-center py-4 text-gray-500">
-                Loading categories...
-              </div>
-            ) : (
-              <>
-                            {/* All Categories Grid */}
+            {/* All Categories Grid */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               {categories.map((category) => (
                 <Button
@@ -153,12 +132,6 @@ export default function AddExpenseDialog({
                 </Button>
               ))}
             </div>
-
-
-
-
-              </>
-            )}
           </div>
 
           {/* Split Expense Toggle */}
@@ -214,7 +187,7 @@ export default function AddExpenseDialog({
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  <Spinner size="sm" className="mr-2" />
                   Adding...
                 </>
               ) : (
