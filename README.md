@@ -77,6 +77,24 @@ Create a `.env.local` file:
 POSTGRES_URL="your-postgres-connection-string"
 ```
 
+### Deployment
+
+**Important**: Environment variables are not automatically pushed to deployment platforms due to `.gitignore` security.
+
+#### Vercel Deployment
+
+1. **Push your code to GitHub**
+2. **Connect your repository to Vercel**
+3. **Set environment variables in Vercel:**
+   - Go to Project Settings → Environment Variables
+   - Add `POSTGRES_URL` with your PostgreSQL connection string
+   - Set to Production environment
+4. **Deploy**
+
+#### Other Platforms
+
+Set the `POSTGRES_URL` environment variable in your hosting platform's dashboard.
+
 ### Database Schema
 
 The app automatically creates these tables:
