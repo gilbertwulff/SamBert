@@ -1,148 +1,140 @@
-# 💰 SamBert - Budget Tracker
+# Budget App - SplitSpend
 
-A modern, mobile-first budget tracking app designed for couples to manage their shared and individual expenses.
+A budget tracking app for roommates to manage shared expenses and IOUs.
 
-## ✨ Features
+## Features
 
-### 🔐 Simple Authentication
-- Two users: "Bert" and "Sam"
-- Quick user selection on app launch
-- Session persistence with localStorage
+- 💰 Track individual and shared expenses
+- 🤝 Manage IOUs between roommates
+- 📊 Analytics and spending breakdowns
+- 🏷️ Custom spending categories
+- 👥 Multi-user support (Bert & Sam)
 
-### ➕ Add Expenses
-- **Required fields**: Title, Amount, Category
-- **Optional**: Notes (toggle to show)
-- **Quick category buttons**: Dynamic sizing based on content
-- **Split expenses**: Toggle to automatically divide amount between both users
-- **Time tracking**: Expenses logged with timestamp
+## Tech Stack
 
-### 📊 Dashboard & Analytics
-- **Monthly totals**: Individual, combined, and shared spending views
-- **Budget tracking**: Set monthly budget caps with progress indicators
-- **Category breakdown**: Pie chart showing spending by category
-- **Quick stats**: Food, Online Shopping, Entertainment summary cards
-- **Recent expenses**: Color-coded chronological list
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **Database**: PostgreSQL (Vercel Postgres)
+- **Deployment**: Vercel
 
-### 💕 Pinjam (IOUs)
-- Track money owed between partners
-- "I Owe" and "Owed to Me" tabs
-- Approve/reject pending IOUs
-- Mark as paid to convert to expenses (with 💕 emoji)
-- Notes support for additional context
+## Setup Instructions
 
-### 🗑️ Delete Functionality
-- Delete expenses and IOUs with confirmation dialogs
-- Available in "All Transactions" view
-- Red hover states for delete buttons
+### Prerequisites
 
-### 📱 Mobile-First Design
-- PWA support with manifest.json
-- iOS-specific meta tags for home screen app
-- Responsive design optimized for mobile devices
-- Modern green color scheme (#B5FFE1, #93E5AB, #65B891)
+- Node.js 18+ 
+- npm or yarn
+- PostgreSQL database (local or Vercel)
 
-## 🛠️ Tech Stack
+### Local Development
 
-- **Framework**: Next.js 14 (App Router)
-- **Database**: SQLite with better-sqlite3
-- **UI Components**: Shadcn/UI + Tailwind CSS
-- **Charts**: Recharts
-- **Icons**: Lucide React
-- **PWA**: Manifest.json for native app experience
-
-## 🚀 Getting Started
-
-1. **Install dependencies**:
+1. **Clone and install dependencies:**
    ```bash
+   git clone <repository-url>
+   cd splitspend
    npm install
    ```
 
-2. **Run the development server**:
+2. **Set up PostgreSQL:**
+
+   **Option A: Local PostgreSQL**
+   ```bash
+   # Install PostgreSQL locally
+   # macOS: brew install postgresql
+   # Ubuntu: sudo apt-get install postgresql postgresql-contrib
+   
+   # Create database
+   createdb budget_db
+   
+   # Set environment variables
+   export POSTGRES_URL="postgresql://username:password@localhost:5432/budget_db"
+   ```
+
+   **Option B: Vercel Postgres (Recommended)**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Create a new Postgres database
+   - Copy the connection string
+   - Set environment variable: `POSTGRES_URL="your-connection-string"`
+
+3. **Initialize database:**
+   ```bash
+   # The app will auto-initialize on first API call
+   # Or manually trigger:
+   curl -X POST http://localhost:3000/api/init
+   ```
+
+4. **Start development server:**
    ```bash
    npm run dev
    ```
 
-3. **Open your browser** and navigate to `http://localhost:3000`
-
-## 📦 Deployment
-
-### Vercel (Recommended)
-
-1. **Push your code to GitHub**
-2. **Connect your repository to Vercel**
-3. **Add Vercel Postgres:**
-   - Go to your Vercel dashboard
-   - Select your project
-   - Go to the "Storage" tab
-   - Click "Create Database" → "Postgres"
-   - Follow the setup wizard
-4. **Deploy with default settings**
-5. **Your app is ready!** 
-   - Bert and Sam are hardcoded and instantly available
-   - Database will auto-initialize when first accessed
-   - No manual initialization required
-
-### Manual Deployment
-
-1. Build the application:
-   ```bash
-   npm run build
-   ```
-
-2. Start the production server:
-   ```bash
-   npm start
-   ```
+5. **Access the app:**
+   - Open [http://localhost:3000](http://localhost:3000)
+   - Use the database management tools in Settings to initialize data
 
 ### Environment Variables
 
-Vercel Postgres automatically provides these environment variables when you add the Postgres add-on:
-- `POSTGRES_URL`
-- `POSTGRES_PRISMA_URL` 
-- `POSTGRES_URL_NO_SSL`
-- `POSTGRES_URL_NON_POOLING`
-- `POSTGRES_USER`
-- `POSTGRES_HOST`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_DATABASE`
+Create a `.env.local` file:
+```env
+POSTGRES_URL="your-postgres-connection-string"
+```
 
-No manual configuration required - Vercel handles this automatically!
+### Database Schema
 
-## 📱 Mobile App Experience
+The app automatically creates these tables:
+- **users**: Hardcoded users (Bert & Sam)
+- **categories**: Spending categories with emojis
+- **spendings**: Individual expense records
+- **ious**: IOU records between users
 
-Add to your home screen for a native app experience:
-- **iOS**: Safari > Share > Add to Home Screen
-- **Android**: Chrome > Menu > Add to Home Screen
+### API Endpoints
 
-Features full-screen mode, custom icons, and splash screens.
+- `GET /api/categories` - List all categories
+- `POST /api/categories` - Add new category (emoji + name)
+- `GET /api/spendings` - List all expenses
+- `POST /api/spendings` - Add new expense
+- `GET /api/analytics` - Get spending analytics
+- `GET /api/ious` - List all IOUs
 
-## 📱 How to Use
+### Adding Categories
 
-1. **Select User**: Choose between "Bert" or "Sam" on the welcome screen
-2. **View Dashboard**: See spending analytics, budget progress, and charts
-3. **Add Expense**: Use the floating + button to add new expenses
-4. **Track IOUs**: Use the Pinjam tab to manage money owed
-5. **View Transactions**: Click "View More" to see all transactions with delete options
-6. **Manage Settings**: Configure budgets and user profiles
+1. Go to Settings → Category Management
+2. Enter an emoji (e.g., 🍕)
+3. Enter a category name (e.g., "Pizza")
+4. Click "Add Category"
 
-## 🎨 Design Features
+### Deployment
 
-- **Clean UI**: Modern card-based layout with green color scheme
-- **Emoji-driven**: Visual category identification
-- **Quick actions**: Minimal taps to add expenses
-- **Color coding**: Category colors on transaction lists
-- **Confirmation dialogs**: Prevent accidental deletions
-- **Dynamic buttons**: Content-based sizing for categories
+1. **Push to GitHub**
+2. **Connect to Vercel**
+3. **Add environment variables** (POSTGRES_URL)
+4. **Deploy**
 
-## 🔄 Data Architecture
+The app will automatically initialize the database on first deployment.
 
-- **API Routes**: Next.js API endpoints for all database operations
-- **Client-side wrapper**: Abstracted fetch calls with error handling
-- **Vercel Postgres**: Persistent cloud database with auto-scaling
-- **Type safety**: Full TypeScript interfaces with proper SQL typing
-- **Real-time updates**: Automatic refresh after data changes
-- **Auto-initialization**: Database tables and seed data created automatically
+## Troubleshooting
 
----
+### "Failed to fetch categories" Error
+- Ensure PostgreSQL is running and accessible
+- Check POSTGRES_URL environment variable
+- Verify database permissions
 
-Built with ❤️ for couples who want to manage their finances together!
+### Database Connection Issues
+- Test connection: `psql $POSTGRES_URL`
+- Check firewall/network settings
+- Verify database exists and is accessible
+
+### Local Development Issues
+- Use `npm run reset-db` to reset local database
+- Check server logs for detailed error messages
+- Ensure all environment variables are set
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.

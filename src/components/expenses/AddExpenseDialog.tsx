@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { getCategories, addSpending, addSharedSpending } from '@/lib/db';
+import { getCategories, addSpending, addSharedSpending } from '@/lib/api';
 import { User, Category } from '@/lib/types';
 
 interface AddExpenseDialogProps {
@@ -30,6 +30,7 @@ export default function AddExpenseDialog({
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,6 +57,8 @@ export default function AddExpenseDialog({
     if (!title.trim() || !amount || !selectedCategory) {
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const amountNum = parseFloat(amount);
@@ -88,6 +91,8 @@ export default function AddExpenseDialog({
     } catch (error) {
       console.error('Failed to add expense:', error);
       // You might want to show an error message to the user here
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -133,42 +138,23 @@ export default function AddExpenseDialog({
               </div>
             ) : (
               <>
-                {/* Quick Category Buttons */}
-                <div className="flex gap-2 mt-2 mb-3">
-                  {quickCategories.map((category) => {
-                    const contentLength = category.emoji.length + category.name.length;
-                    const flexBasis = Math.max(contentLength * 8, 80); // Minimum 80px, 8px per character
-                    return (
-                      <Button
-                        key={category.id}
-                        type="button"
-                        variant={selectedCategory?.id === category.id ? "default" : "outline"}
-                        className="h-12"
-                        style={{ flexBasis: `${flexBasis}px`, flexGrow: 0, flexShrink: 0 }}
-                        onClick={() => setSelectedCategory(category)}
-                      >
-                        <span className="mr-1">{category.emoji}</span>
-                        {category.name}
-                      </Button>
-                    );
-                  })}
-            </div>
-
-            {/* All Categories Grid */}
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              {categories.slice(3).map((category) => (
-                                        <Button
-                          key={category.id}
-                          type="button"
-                          variant={selectedCategory?.id === category.id ? "default" : "outline"}
-                          className="h-12 text-sm"
-                          onClick={() => setSelectedCategory(category)}
-                        >
-                          <span className="mr-1">{category.emoji}</span>
-                          {category.name}
-                        </Button>
+                            {/* All Categories Grid */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  type="button"
+                  variant={selectedCategory?.id === category.id ? "default" : "outline"}
+                  className="h-12 text-sm sm:text-sm px-2"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  <span className="mr-1">{category.emoji}</span>
+                  <span className="truncate">{category.name}</span>
+                </Button>
               ))}
             </div>
+
+
 
 
               </>
@@ -224,9 +210,16 @@ export default function AddExpenseDialog({
             <Button
               type="submit"
               className="flex-1"
-              disabled={!title.trim() || !amount || !selectedCategory}
+              disabled={!title.trim() || !amount || !selectedCategory || isSubmitting}
             >
-              Add Expense
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Adding...
+                </>
+              ) : (
+                'Add Expense'
+              )}
             </Button>
           </div>
         </form>

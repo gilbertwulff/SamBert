@@ -46,6 +46,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   } catch (error) {
+    console.error('Analytics API error:', error);
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
   }
 }

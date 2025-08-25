@@ -207,7 +207,6 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
                     {/* Color bar */}
                     <div 
                       className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
-                      style={{ backgroundColor: iou.categoryColor }}
                     ></div>
                     
                     <div className="flex items-center space-x-3 ml-3 flex-1">
@@ -339,41 +338,20 @@ export default function PinjamPage({ currentUser }: PinjamPageProps) {
                   </div>
                 ) : (
                   <>
-                    {/* Quick Category Buttons */}
-                    <div className="flex gap-2 mt-2 mb-3">
-                      {quickCategories.map((category) => {
-                        const contentLength = category.emoji.length + category.name.length;
-                        const flexBasis = Math.max(contentLength * 8, 80); // Minimum 80px, 8px per character
-                        return (
-                          <Button
-                            key={category.id}
-                            type="button"
-                            variant={selectedCategory?.id === category.id ? "default" : "outline"}
-                            className="h-12"
-                            style={{ flexBasis: `${flexBasis}px`, flexGrow: 0, flexShrink: 0 }}
-                            onClick={() => setSelectedCategory(category)}
-                          >
-                            <span className="mr-1">{category.emoji}</span>
-                            {category.name}
-                          </Button>
-                        );
-                      })}
-                    </div>
-
                     {/* All Categories Grid */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
-                      {categories.slice(3).map((category) => (
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {categories.map((category) => (
                         <Button
                           key={category.id}
                           type="button"
                           variant={selectedCategory?.id === category.id ? "default" : "outline"}
-                          className="h-12 text-xs"
+                          className="h-12 text-sm sm:text-sm px-2"
                           onClick={() => setSelectedCategory(category)}
                         >
                           <span className="mr-1">{category.emoji}</span>
-                          {category.name}
+                          <span className="truncate">{category.name}</span>
                         </Button>
-                      ))}
+                        ))}
                     </div>
                   </>
                 )}

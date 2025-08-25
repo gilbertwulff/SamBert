@@ -94,6 +94,8 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
   const [seedLoading, setSeedLoading] = useState(false);
   const [seedMessage, setSeedMessage] = useState('');
   
+
+  
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -204,6 +206,8 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
     return new Date(2024, month).toLocaleDateString('en-US', { month: 'long' });
   };
 
+
+
   return (
     <div className="max-w-md mx-auto bg-background min-h-screen">
       <div className="p-4 space-y-6">
@@ -294,6 +298,8 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
             </div>
           </CardContent>
         </Card>
+
+
 
         {/* Database Management */}
         <Card>

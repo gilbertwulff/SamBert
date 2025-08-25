@@ -6,6 +6,7 @@ export async function GET() {
     const spendings = await getSpendingsWithDetails();
     return NextResponse.json(spendings);
   } catch (error) {
+    console.error('Failed to fetch spendings:', error);
     return NextResponse.json({ error: 'Failed to fetch spendings' }, { status: 500 });
   }
 }
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
       return NextResponse.json(newSpending);
     }
   } catch (error) {
+    console.error('Failed to add spending:', error);
     return NextResponse.json({ error: 'Failed to add spending' }, { status: 500 });
   }
 }

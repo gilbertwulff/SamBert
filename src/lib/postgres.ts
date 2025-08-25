@@ -1,10 +1,17 @@
 import { sql } from '@vercel/postgres';
-import { Category, Spending, IOU } from './types';
+import { Category, Spending, IOU, User } from './types';
 
 // Initialize database tables
 export async function initializeDatabase() {
   try {
-    // Note: Users are now hardcoded, no users table needed
+    // Create users table
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        budget_cap DECIMAL(10,2) DEFAULT 3000
+      )
+    `;
     
     // Create categories table
     await sql`
@@ -56,7 +63,22 @@ export async function initializeDatabase() {
 // Seed initial data
 export async function seedInitialData() {
   try {
-    // Note: Users are now hardcoded (Bert=1, Sam=2), no database seeding needed
+    // Check if users already exist
+    const existingUsers = await sql`SELECT COUNT(*) as count FROM users`;
+    const userCount = parseInt(existingUsers.rows[0].count as string);
+    
+    if (userCount === 0) {
+      console.log('Seeding initial users...');
+      
+      // Insert default users
+      await sql`
+        INSERT INTO users (name, budget_cap) VALUES 
+        ('Bert', 3000),
+        ('Sam', 3000)
+      `;
+      
+      console.log('Initial users seeded successfully');
+    }
     
     // Check if categories already exist
     const existingCategories = await sql`SELECT COUNT(*) as count FROM categories`;
@@ -73,7 +95,10 @@ export async function seedInitialData() {
         ('Online Shopping', '📦', '#3B82F6'),
         ('Transport', '🚗', '#F59E0B'),
         ('Entertainment', '🎬', '#8B5CF6'),
-        ('Bills', '💡', '#6B7280')
+        ('Bills', '💡', '#6B7280'),
+        ('Personal Care', '🧴', '#EC4899'),
+        ('Offline Shopping', '🛍️', '#8B5CF6'),
+        ('Health', '🏥', '#10B981')
       `;
       
       console.log('Initial categories seeded successfully');
@@ -86,7 +111,30 @@ export async function seedInitialData() {
   }
 }
 
-// Note: User functions moved to static-users.ts since users are now hardcoded
+// User functions
+export async function getUsers(): Promise<User[]> {
+  try {
+    // Query users from the database
+    const result = await sql`SELECT id, name, budget_cap FROM users ORDER BY id`;
+    return result.rows.map(row => ({
+      id: row.id as number,
+      name: row.name as string,
+      budgetCap: row.budget_cap ? parseFloat(row.budget_cap as string) : undefined
+    }));
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+}
+
+export async function updateUserBudget(userId: number, budgetCap: number): Promise<void> {
+  try {
+    await sql`UPDATE users SET budget_cap = ${budgetCap} WHERE id = ${userId}`;
+  } catch (error) {
+    console.error('Error updating user budget:', error);
+    throw error;
+  }
+}
 
 // Category functions
 export async function getCategories(): Promise<Category[]> {

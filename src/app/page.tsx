@@ -37,10 +37,23 @@ export default function Home() {
     setRefreshKey(prev => prev + 1);
   };
 
-  const handleBudgetUpdated = () => {
-    const user = getCurrentUser();
-    setCurrentUser(user);
-    setRefreshKey(prev => prev + 1);
+  const handleBudgetUpdated = async () => {
+    try {
+      // Fetch updated user data from the database
+      const response = await fetch('/api/users');
+      if (response.ok) {
+        const users = await response.json();
+        const updatedUser = users.find((user: User) => user.id === currentUser?.id);
+        if (updatedUser) {
+          // Update both the state and localStorage
+          setCurrentUser(updatedUser);
+          localStorage.setItem('sambert_current_user', JSON.stringify(updatedUser));
+        }
+      }
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
   };
 
   const handleViewAllTransactions = () => {

@@ -6,6 +6,7 @@ export async function GET() {
     const ious = await getIOUsWithDetails();
     return NextResponse.json(ious);
   } catch (error) {
+    console.error('Failed to fetch IOUs:', error);
     return NextResponse.json({ error: 'Failed to fetch IOUs' }, { status: 500 });
   }
 }
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
     const newIOU = await addIOU(body);
     return NextResponse.json(newIOU);
   } catch (error) {
+    console.error('Failed to add IOU:', error);
     return NextResponse.json({ error: 'Failed to add IOU' }, { status: 500 });
   }
 }
@@ -26,6 +28,7 @@ export async function PUT(request: Request) {
     await updateIOUStatus(iouId, status);
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Failed to update IOU status:', error);
     return NextResponse.json({ error: 'Failed to update IOU status' }, { status: 500 });
   }
 }
