@@ -2,40 +2,28 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
   try {
-    const { getStaticUsers } = await import('@/lib/static-users');
-    const { getStaticCategories } = await import('@/lib/static-categories');
-    
     console.log('Manual seeding triggered');
     
-    const users = getStaticUsers();
-    let categories;
-    let seedStatus = 'unknown';
+    // Use the new reset and seed function
+    const { initializeDatabase, resetAndSeedDatabase, getUsers, getCategories } = await import('@/lib/postgres');
     
-    // Try to seed Postgres first
-    try {
-      const { initializeDatabase, seedInitialData, getCategories } = await import('@/lib/postgres');
-      
-      await initializeDatabase();
-      await seedInitialData();
-      categories = await getCategories();
-      seedStatus = 'postgres_seeded';
-      
-      console.log('Postgres seeding complete. Users:', users.length, 'Categories:', categories.length);
-    } catch (postgresError) {
-      console.error('Postgres seeding failed, using static categories:', postgresError);
-      categories = getStaticCategories();
-      seedStatus = 'postgres_failed_using_static';
-    }
+    await initializeDatabase();
+    await resetAndSeedDatabase();
+    
+    const users = await getUsers();
+    const categories = await getCategories();
+    
+    console.log('Postgres reset and seeding complete. Users:', users.length, 'Categories:', categories.length);
     
     return NextResponse.json({
       success: true,
-      message: `Database seeding completed (${seedStatus})`,
+      message: 'Database reset and seeded successfully',
       data: {
         users: users,
         categories: categories,
         userCount: users.length,
         categoryCount: categories.length,
-        seedStatus: seedStatus
+        seedStatus: 'postgres_reset_and_seeded'
       }
     });
   } catch (error) {
@@ -43,7 +31,7 @@ export async function POST() {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to seed database',
+        error: 'Failed to reset and seed database',
         details: error instanceof Error ? error.message : 'Unknown error'
       }, 
       { status: 500 }

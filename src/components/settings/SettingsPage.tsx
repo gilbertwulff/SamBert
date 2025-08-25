@@ -89,6 +89,11 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
   const [budgetAmount, setBudgetAmount] = useState(
     currentUser.budgetCap?.toString() || ''
   );
+  
+  // Update budget amount when currentUser changes
+  useEffect(() => {
+    setBudgetAmount(currentUser.budgetCap?.toString() || '');
+  }, [currentUser.budgetCap]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [seedLoading, setSeedLoading] = useState(false);
@@ -121,11 +126,14 @@ export default function SettingsPage({ currentUser, onBudgetUpdated }: SettingsP
     try {
       const amount = parseFloat(budgetAmount);
       if (amount > 0) {
-        await updateUserBudget(currentUser.id, amount);
+        console.log('Updating budget for user', currentUser.id, 'to', amount);
+        const updatedUser = await updateUserBudget(currentUser.id, amount);
+        console.log('Budget updated successfully:', updatedUser);
         onBudgetUpdated();
       }
     } catch (error) {
       console.error('Failed to update budget:', error);
+      alert('Failed to update budget. Please try again.');
     }
   };
 

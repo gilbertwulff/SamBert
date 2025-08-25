@@ -111,6 +111,38 @@ export async function seedInitialData() {
   }
 }
 
+// Reset and seed database (clears all data and re-seeds)
+export async function resetAndSeedDatabase() {
+  try {
+    console.log('Resetting database...');
+    
+    // Clear all data from tables (in reverse dependency order)
+    await sql`DELETE FROM ious`;
+    await sql`DELETE FROM spendings`;
+    await sql`DELETE FROM categories`;
+    await sql`DELETE FROM users`;
+    
+    console.log('All data cleared successfully');
+    
+    // Reset auto-increment sequences
+    await sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`;
+    await sql`ALTER SEQUENCE categories_id_seq RESTART WITH 1`;
+    await sql`ALTER SEQUENCE spendings_id_seq RESTART WITH 1`;
+    await sql`ALTER SEQUENCE ious_id_seq RESTART WITH 1`;
+    
+    console.log('Sequences reset successfully');
+    
+    // Now seed fresh data
+    await seedInitialData();
+    
+    console.log('Database reset and seeded successfully');
+    return true;
+  } catch (error) {
+    console.error('Error resetting and seeding database:', error);
+    throw error;
+  }
+}
+
 // User functions
 export async function getUsers(): Promise<User[]> {
   try {
